@@ -1,3 +1,16 @@
+# -*- coding: utf-8 -*-
+
+"""AnnotationScriptExporterUI.py: UI for Annotation Script Exporter Task."""
+
+__author__ = 'Edoardo Carmignani'
+__copyright__ = 'Copyright ©2024 Edoardo Carmignani. All rights reserved.'
+
+__license__ = 'MIT'
+__version__ = '0.1.0'
+__email__ = 'edoardo.carmignani@gmail.com'
+__date__ = '2024.Feb.17'
+
+
 from AnnotationScriptExporterTask import (AnnotationScriptExporterTask, AnnotationScriptExporterPreset)
 from PySide2 import (QtCore, QtWidgets)
 from hiero.ui.FnTaskUIFormLayout import TaskUIFormLayout

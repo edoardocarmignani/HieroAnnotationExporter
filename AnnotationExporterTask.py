@@ -6,9 +6,9 @@ __author__ = 'Edoardo Carmignani'
 __copyright__ = 'Copyright ©2024 Edoardo Carmignani. All rights reserved.'
 
 __license__ = 'MIT'
-__version__ = '0.0.1'
+__version__ = '0.1.0'
 __email__ = 'edoardo.carmignani@gmail.com'
-__date__ = '2024.Feb.15'
+__date__ = '2024.Feb.16'
 
 
 from PySide2 import QtWidgets
@@ -34,6 +34,11 @@ class AnnotationExporterTask(hiero.core.TaskBase):
                 widget.update()
 
     def get_annotations_frames(self) -> List[int]:
+        """Get all frames in clips that has annotation in it.
+
+        Returns:
+            List[int]: list of annotated frames
+        """
         ann: List[hiero.core.Annotation] = [note for note in itertools.chain( *itertools.chain(*self._item.source().subTrackItems()) ) if isinstance(note, hiero.core.Annotation)]
         frame_list: List[int] = [f.timelineIn() for f in ann]
         return frame_list
@@ -67,8 +72,6 @@ class AnnotationExporterTask(hiero.core.TaskBase):
         frame_text.setKnob('font', '{{ Nunito Sans : Bold : NunitoSans-Bold.ttf : 0 }}')
         self._script.addNode(frame_text)
 
-        # print(self._sequence.format()) # NOTE: maybe use sequence format for export? or UI?
-
         write = hiero.core.nuke.WriteNode(path)
         write.setKnob('name', 'ANNOTATIONS_OUT')
         self._script.addNode(write)
@@ -80,15 +83,19 @@ class AnnotationExporterTask(hiero.core.TaskBase):
             self._export_annotated(frame)
             self._progress = c / len(frames)
             self.update_ui()
-            # while self.poll() is None:
-            #     QtCore.QTimer.singleShot(200, self.poll)
+
             self._process.wait()
             c += 1
 
         self._finished = True
         return False
 
-    def _export_annotated(self, frame):
+    def _export_annotated(self, frame: int):
+        """Runs for each annotated frames. It writes Nuke script on disk and execute it every fram
+
+        Args:
+            frame (int): frame number
+        """
         for node in self._script.getNodes():
             if node.__class__.__name__ == 'WriteNode':
                 node.knobs()['first'] = frame
@@ -98,12 +105,6 @@ class AnnotationExporterTask(hiero.core.TaskBase):
                 node.knobs()['message'] = f'frame: {frame}'
         self._script.writeToDisk(self._scriptname)
         self._process = hiero.core.nuke.executeNukeScript(self._scriptname, open( self._logname, 'w' ))
-
-    # def poll(self):
-    #     return self._process.poll()
-
-    def upload_to_frack(self):
-        pass
 
     def progress(self):
         if self._finished:

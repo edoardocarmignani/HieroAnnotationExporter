@@ -1,3 +1,16 @@
+# -*- coding: utf-8 -*-
+
+"""AnnotationScriptExporterTask.py: Custom exporter to create a Nuke script with Annotation Group only."""
+
+__author__ = 'Edoardo Carmignani'
+__copyright__ = 'Copyright ©2024 Edoardo Carmignani. All rights reserved.'
+
+__license__ = 'MIT'
+__version__ = '0.1.0'
+__email__ = 'edoardo.carmignani@gmail.com'
+__date__ = '2024.Feb.17'
+
+
 from PySide2 import QtWidgets, QtCore
 from hiero.exporters import FnScriptLayout
 from typing import Dict, List, Literal
@@ -17,11 +30,22 @@ class AnnotationScriptExporterTask(hiero.core.TaskBase):
         return
 
     def get_annotations_frames(self) -> List[int]:
-        ann: List[hiero.core.Annotation] = [note for note in itertools.chain( *itertools.chain(*self._item.source().subTrackItems()) ) if isinstance(note, hiero.core.Annotation)]
+        """Get all frames in clips that has annotation in it.
+
+        Returns:
+            List[int]: list of annotated frames
+        """
+        ann = [note for note in itertools.chain( *itertools.chain(*self._item.source().subTrackItems()) ) if isinstance(note, hiero.core.Annotation)]
         frame_list: List[int] = [f.timelineIn() for f in ann]
         return frame_list
 
     def annotation_group_ui(self, group, frames):
+        """Create ui for Group node with all annotated keyframes and 2 buttons to move between keyframes (NukeAnnotationsExporter._beforeNukeScriptWrite).
+
+        Args:
+            group (nuke.Node('Group')): group node object
+            frames (list): list of annotated frames
+        """
 
         group.addTabKnob('Annotations')
         group.addRawKnob(
@@ -39,6 +63,7 @@ class AnnotationScriptExporterTask(hiero.core.TaskBase):
             group.addRawKnob('annotation_count %s' % len(frames))
 
     def get_track_effects(self):
+        """Get soft effects from track items."""
         self._script.pushLayoutContext('clip', 'Soft Effects')
         effects = [item for item in self._item.linkedItems() if isinstance(item, hiero.core.EffectTrackItem)]
         for fx in effects:
